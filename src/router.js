@@ -7,7 +7,7 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: '/camera',
+      path: '/',
       name: 'camera',
       component: Camera
     },

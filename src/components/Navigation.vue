@@ -2,7 +2,7 @@
     <div id="nav" class="py-2 row text-center position-relative">
         <h5 class="links col-6 m-0" @click="scrollOffset = 0">
            
-            <router-link to="/camera" class="text-info d-block py-2">
+            <router-link to="/" class="text-info d-block py-2">
                 <Camera/> 
                  Camera
                 </router-link>
@@ -20,6 +20,7 @@
 <script>
 import Camera from "vue-material-design-icons/camera.vue"
 import FileImage from "vue-material-design-icons/file-image.vue"
+
 export default {
   data: function() {
     return {
@@ -44,6 +45,6 @@ a:hover {
   border: 3px solid lightblue;
   bottom: -3px;
   left: 0;
-  transition: margin-left 0.3s ease-in-out;
+  transition: margin-left 0.3s ease-out;
 }
 </style>
