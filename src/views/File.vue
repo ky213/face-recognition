@@ -9,17 +9,13 @@
             <p>Click or drag files here to upload</p>
         </div>
     </Upload>
+
   </div>
 </template>
 
 <script>
-import {Upload, Icon} from "iview";
 
 export default {
   
-  components:{
-    Upload,
-    Icon
-  }
 }
 </script>

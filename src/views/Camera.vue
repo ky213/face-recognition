@@ -1,16 +1,15 @@
 <template>
   <div class="">
-    <WebCam/>
+    <Video/>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import WebCam from "../components/WebCam"
+import Video from "../components/Video"
 
 export default {
   components: {
-    WebCam
+    Video
   }
 }
 </script>
