@@ -5,16 +5,6 @@
       <div id="trackingRectangle" :style="rectangle"></div>
       <canvas ref="canvas"></canvas>
     </div>
-    <Button v-if="capture" @click="takeSnapshot" type="error" shape="circle" size="large" class="mt-2 w-25 " title="Stop tracking">
-          <Icon 
-          type="ios-square" 
-          size="42"/>
-    </Button>
-    <Button v-else @click="getCamera" type="primary" shape="circle" size="large" class="mt-2 w-25 " title="Start tracking">
-          <Icon 
-          type="ios-camera" 
-          size="42"/>
-    </Button>
   </div>
 </template>
 
@@ -24,6 +14,7 @@
   export default {
     data: function() {
       return {
+        pictureURL: "",
         capture: false,
         rectangle: {
           width: 0,
@@ -59,18 +50,6 @@
           }
         );
       },
-      takeSnapshot() {
-        const {
-          video,
-          canvas
-        } = this.$refs;
-        const context = canvas.getContext("2d");
-  
-        this.capture = false;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        trackingTask.stop();
-        video.srcObject.getVideoTracks().forEach(track => track.stop());
-      },
       startTracking() {
         const rectangle = this.rectangle;
         const faceTracker = new tracking.ObjectTracker(["face"]);
@@ -78,7 +57,10 @@
         this.capture = true;
         faceTracker.on("track", event => {
           if (event.data.length === 0) {
-            console.log("No faces !");
+            rectangle.width = 0;
+            rectangle.height = 0;
+            rectangle.top = 0;
+            rectangle.left = 0;
           } else {
             event.data.forEach(rect => {
               rectangle.top = rect.y + "px";
@@ -89,6 +71,25 @@
           }
         });
         trackingTask = tracking.track("video", faceTracker);
+      },
+      takeSnapshot() {
+        const {
+          video,
+          canvas
+        } = this.$refs;
+        const context = canvas.getContext("2d");
+  
+        this.capture = false;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          blob => {
+            this.pictureURL = URL.createObjectURL(blob);
+          },
+          "image/jpeg",
+          1
+        );
+        trackingTask.stop();
+        video.srcObject.getVideoTracks().forEach(track => track.stop());
       }
     }
   };
@@ -107,21 +108,27 @@
     height: 300px;
     margin: auto;
     video {
-      width: 100%;
-      height: 100%;
+      width: 400px;
+      height: 300px;
     }
     canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
+      display: none;
+      width: 400px;
+      height: 300px;
     }
     #trackingRectangle {
       position: absolute;
       border: 1px solid rgb(155, 31, 31);
       z-index: 2;
     }
+  }
+
+  .controlIcon{
+    color: lightgray !important;
+    cursor: not-allowed;
+  }
+
+  .controlIcon:hover{
+    color: gray !important;
   }
 </style>
