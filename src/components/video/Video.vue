@@ -2,13 +2,18 @@
   <div id="container" class="row justify-content-center">
     <div id="video-group" class="watch mt-3">
       <video id="video" ref="video" autoplay></video>
-      <div id="trackingRectangle" :style="rectangle"></div>
+      <Landmark :coordinates="rectangle"/>
       <canvas ref="canvas"></canvas>
+      <Controls :capture="capture" @getCamera="getCamera" @takeSnapshot="takeSnapshot" />
+      <MyUpload/>
     </div>
   </div>
 </template>
 
 <script>
+  import Controls from "./Controls"
+  import MyUpload from "./MyUpload"
+  import Landmark from "./Landmark"
   let trackingTask = null;
   
   export default {
@@ -91,6 +96,11 @@
         trackingTask.stop();
         video.srcObject.getVideoTracks().forEach(track => track.stop());
       }
+    },
+    components: {
+      Controls,
+      MyUpload,
+      Landmark
     }
   };
 </script>
@@ -116,19 +126,6 @@
       width: 400px;
       height: 300px;
     }
-    #trackingRectangle {
-      position: absolute;
-      border: 1px solid rgb(155, 31, 31);
-      z-index: 2;
-    }
-  }
-
-  .controlIcon{
-    color: lightgray !important;
-    cursor: not-allowed;
-  }
-
-  .controlIcon:hover{
-    color: gray !important;
-  }
+  
+  } 
 </style>
