@@ -1,29 +1,63 @@
 <template>
-        <div class="row justify-content-center mt-3">
-            <Icon class="col-3 mt-1 text-center text-info controlIcon" type="ios-cloud-upload-outline" size="52" title="upload" />
-            <Button v-if="capture" @click="$emit('takeSnapshot')" type="error" shape="circle" size="large" class="col-3" title="Stop tracking">
-                            <Icon type="ios-square" size="42"/>
-                           </Button>
-            <Button v-else @click="$emit('getCamera')" type="primary" shape="circle" size="large" class="col-3" title="Start tracking">
-                             <Icon type="ios-camera" size="42"/>
-                              </Button>
-            <Icon class="col-3 text-center text-info controlIcon" type="ios-reverse-camera-outline" size="52" title="reverse camera" />
+    <div class="row justify-content-center mt-3">
+        <button 
+        ref="uploadButton"
+        class="btn btn-link mt-2"
+        :disabled="tracking || noFaces || recognizing"
+        title="upload for recognition"
+        @click="$emit('recognize')"
+         >
+               <Icon type="ios-cloud-upload-outline" size="52"/>
+           </button>
+        <div class="col-5">
+            <button v-if="tracking" class="btn btn-danger btn-lg btn-block"
+            @click="$emit('takeSnapshot')"
+            title="stop tracking"
+            >
+                           <Icon type="ios-square" size="52"/>
+                       </button>
+            <button 
+            v-else class="btn btn-primary  btn-lg btn-block"
+            @click="$emit('getCamera')"
+            title="start face tracking"
+            >
+                           <Icon type="ios-camera" size="52"/>
+                       </button>
+    
         </div>
+        <button 
+        class="btn btn-link" 
+        title="swap camera"
+        :disabled="tracking"
+        @click="$emit('swapCamera')"
+         >
+               <Icon type="ios-reverse-camera-outline" size="52"/>
+           </button>
+    
+    </div>
 </template>
 
 <script>
-    export default {
-        props: ["capture"]
-    };
+export default {
+  props: ["tracking","recognizing", "noFaces"],
+};
 </script>
 
 <style lang="scss" scoped>
-    .controlIcon {
-        color: lightgray !important;
-        cursor: not-allowed;
-    }
-    
-    .controlIcon:hover {
-        color: gray !important;
-    }
+.btn {
+  border-radius: 20px;
+}
+
+button:disabled {
+  cursor: not-allowed !important;
+}
+
+.controlIcon {
+  color: lightgray !important;
+  cursor: not-allowed;
+}
+
+.controlIcon:hover {
+  color: gray !important;
+}
 </style>
