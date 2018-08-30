@@ -20,6 +20,7 @@
             v-else class="btn btn-primary  btn-lg btn-block"
             @click="$emit('getCamera')"
             title="start face tracking"
+            :disabled="recognizing"
             >
                            <Icon type="ios-camera" size="52"/>
                        </button>

@@ -25,7 +25,7 @@
 
 <style lang="scss">
   .component-slide-enter-active, .component-slide-leave-active {
-  transition: opacity .3s ease-out;
+  transition: opacity .1s ease-out;
 }
 .component-slide-enter, .component-slide-leave-to
 /* .component-slide-leave-active below version 2.1.8 */ {
