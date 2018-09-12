@@ -1,30 +1,36 @@
 <template>
     <div id="trackingGroup" :style="coordinates" class="d-flex flex-column align-items-center">
-        <div id="rectangle"></div>
-        <Input v-model="value" placeholder="name.." class="name position-absolute d-none" />
+        <div id="rectangle" :style="{borderColor:person ? '#28a745' : 'red'}"></div>
+        <input v-if="!person" v-model="imageName" placeholder="name.." class="name position-absolute" />
+        <p v-else class="name position-absolute text-center text-light bg-success">{{person}} <p/>
     </div>
 </template>
 
 <script>
-    export default {
-        props: ["coordinates"]
-    }
+export default {
+  data() {
+    return {
+      imageName: ""
+    };
+  },
+  props: ["coordinates", "person"]
+};
 </script>
 
 <style lang="scss" scoped>
-    #trackingGroup {
-        position: absolute;
-        z-index: 2;
-    }
+#trackingGroup {
+  position: absolute;
+  z-index: 2;
+}
 
-    #rectangle {
-        width: 100%;
-        height: 100%;
-        border: 2px solid red
-    }
+#rectangle {
+  width: 100%;
+  height: 100%;
+  border: 2px solid red;
+}
 
-    .name {
-        bottom: -35px;
-        width: 120%
-    }
+.name {
+  bottom: -26px;
+  width: 100%;
+}
 </style>

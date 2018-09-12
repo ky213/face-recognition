@@ -4,9 +4,9 @@
             No faces were detected
             <span slot="desc">Please check the illumination or adjust the  camera position and then start tracking again.</span>
         </Alert>
-        <Alert v-else class="alert" type="success" show-icon closable>
+        <Alert v-if="!recognizing && !noFaces && !person" class="alert" type="success" show-icon closable>
             Good to go
-            <span slot="desc">Use the cloud upload button to start recognition</span>
+            <span slot="desc">Click the cloud upload button to start recognition</span>
         </Alert>
         <Alert v-if="recognizing && !noFaces" class="alert" type="info" show-icon closable>
             Recognizing...
@@ -26,7 +26,7 @@
                 showAlert:false
             }
         },
-        props: ["tracking", "recognizing", "noFaces"],
+        props: ["tracking", "recognizing", "noFaces", "person"],
         beforeUpdate(){
             this.showAlert = true;
         }

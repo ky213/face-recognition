@@ -1,5 +1,6 @@
 import Vue from "vue";
 import iview from "iview";
+import Mixins from "./mixins"
 import App from "./App.vue";
 // import "./registerServiceWorker";
 import router from "./router";
@@ -9,9 +10,12 @@ import "vue-material-design-icons/styles.css";
 import "iview/dist/styles/iview.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+
+
 Vue.config.productionTip = false;
 Vue.config.devtools = true;
 Vue.use(iview);
+Vue.mixin(Mixins);
 
 new Vue({
   router,

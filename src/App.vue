@@ -22,7 +22,6 @@
   };
 </script>
 
-
 <style lang="scss">
   .component-slide-enter-active, .component-slide-leave-active {
   transition: opacity .1s ease-out;
