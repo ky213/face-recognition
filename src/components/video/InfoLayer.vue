@@ -4,7 +4,7 @@
             No faces were detected
             <span slot="desc">Please check the illumination or adjust the  camera position and then start tracking again.</span>
         </Alert>
-        <Alert v-if="!recognizing && !noFaces && !person" class="alert" type="success" show-icon closable>
+        <Alert v-if="!recognizing && !noFaces && !recognizedFace" class="alert" type="success" show-icon closable>
             Good to go
             <span slot="desc">Click the cloud upload button to start recognition</span>
         </Alert>
@@ -20,13 +20,17 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
     export default {
         data(){
             return {
                 showAlert:false
             }
         },
-        props: ["tracking", "recognizing", "noFaces", "person"],
+        computed:{
+            ...mapState(["tracking", "recognizing", "noFaces", "recognizedFace"])
+        },
         beforeUpdate(){
             this.showAlert = true;
         }

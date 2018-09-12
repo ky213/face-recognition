@@ -29,7 +29,7 @@
         <button 
         class="btn btn-link" 
         title="swap camera"
-        :disabled="tracking"
+        :disabled="tracking || recognizing"
         @click="$emit('swapCamera')"
          >
                <Icon type="ios-reverse-camera-outline" size="52"/>
@@ -39,8 +39,12 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
-  props: ["tracking","recognizing", "noFaces"],
+  computed:{
+    ...mapState(["tracking", "recognizing", "noFaces"])
+  }
 };
 </script>
 

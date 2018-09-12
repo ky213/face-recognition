@@ -1,20 +1,19 @@
 <template>
   <div id="container" class="row justify-content-center">
     <div id="video-group" class="watch mt-3">
-      <InfoLayer :tracking="tracking " :recognizing="recognizing" :noFaces="noFaces" :person ="recognizedPerson" />
+      <InfoLayer/>
       <video id="video" ref="video" autoplay></video>
-      <Landmark :coordinates="rectangle" :person="recognizedPerson" />
+      <BoundingBox />
       <canvas ref="canvas"></canvas>
-      <Controls :tracking="tracking" :noFaces="noFaces" :recognizing="recognizing" @getCamera="getCamera" @takeSnapshot="takeSnapshot" @recognize="recognize" @swapCamera="swapCamera" />
-      <MyUpload :picture="pictureURL" />
+      <Controls  @getCamera="getCamera" @takeSnapshot="takeSnapshot" @recognize="recognize" @swapCamera="swapCamera" />
     </div>
   </div>
 </template>
 
 <script>
+import { mapMutations } from "vuex";
 import Controls from "./Controls";
-import MyUpload from "./MyUpload";
-import Landmark from "./Landmark";
+import BoundingBox from "./BoundingBox";
 import InfoLayer from "./InfoLayer";
 
 let trackingTask = null;
@@ -22,24 +21,14 @@ let trackingTask = null;
 export default {
   data: function() {
     return {
-      facingMode: "user", // front or rear camera
-      pictureURL: "",
-      tracking: null,
-      recognizing: null,
-      noFaces: null,
-      recognizedPerson: "",
-      rectangle: {
-        width: 0,
-        height: 0,
-        top: 0,
-        left: 0
-      }
+      facingMode: "user" // front or rear camera
     };
   },
   mounted: function() {
     this.getCamera();
   },
   methods: {
+    ...mapMutations(["positionBoundingBox", "toggleState"]),
     getCamera() {
       navigator.getMedia =
         navigator.getUserMedia ||
@@ -75,21 +64,15 @@ export default {
       const rectangle = this.rectangle;
       const faceTracker = new tracking.ObjectTracker(["face"]);
 
-      this.tracking = true;
+      this.toggleState({tracking:true });
       faceTracker.on("track", event => {
         if (event.data.length === 0) {
-          rectangle.width = 0;
-          rectangle.height = 0;
-          rectangle.top = 0;
-          rectangle.left = 0;
+          this.positionBoundingBox(0);
           this.noFaces = true;
         } else {
           this.noFaces = false;
           event.data.forEach(rect => {
-            rectangle.top = rect.y + "px";
-            rectangle.left = rect.x + "px";
-            rectangle.height = rect.height + "px";
-            rectangle.width = rect.width + "px";
+            this.positionBoundingBox(rect);
           });
         }
       });
@@ -99,8 +82,7 @@ export default {
       const { video, canvas } = this.$refs;
       const context = canvas.getContext("2d");
 
-      this.tracking = false;
-      this.recognizedPerson = "";
+      this.toggleState({ tracking:false, recognizedFace:"" });
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       this.pictureURL = canvas.toDataURL();
       trackingTask.stop();
@@ -114,9 +96,7 @@ export default {
       for (var i = 0; i < pictureBinary.length; i++) {
         pictureBuffer[i] = pictureBinary.charCodeAt(i);
       }
-
-      this.tracking = false;
-      this.recognizing = true;
+      this.toggleState({tracking:false, recognizing:true})
       this.detectFaces(pictureBuffer);
     },
     swapCamera() {
@@ -131,8 +111,7 @@ export default {
   },
   components: {
     Controls,
-    MyUpload,
-    Landmark,
+    BoundingBox,
     InfoLayer
   }
 };

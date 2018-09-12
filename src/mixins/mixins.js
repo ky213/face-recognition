@@ -23,20 +23,21 @@ const mixin = {
     detectFaces(picture) {
       const params = {
         CollectionId: "myCollection",
-        FaceMatchThreshold: 99,
         Image: {
           Bytes: picture
-        }
+        },
+        FaceMatchThreshold: 99
       };
 
       rekognition.searchFacesByImage(params, (error, data) => {
-        this.recognizing = false;
+        this.toggleState({ recognizing: false });
         if (error) return;
 
         const { Face } = data.FaceMatches.shift();
 
-        if (Face) this.recognizedPerson = Face.ExternalImageId || "";
-        else this.enrollFaces(picture);
+        if (Face)
+          this.toggleState({ recognizedFace: Face.ExternalImageId || "" });
+        // else this.enrollFaces(picture);
       });
     },
     enrollFaces(picture) {
