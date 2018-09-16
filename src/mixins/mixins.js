@@ -10,7 +10,17 @@ const rekognition = new Rekognition({
 
 rekognition.createCollection(
   { CollectionId: "myCollection" },
-  (error, data) => {}
+  (erro, data) => {}
+);
+
+rekognition.deleteCollection(
+  { CollectionId: "emptyCollection" },
+  (error, data) => {
+    rekognition.createCollection(
+      { CollectionId: "emptyCollection" },
+      (error, data) => {}
+    );
+  }
 );
 
 const mixin = {
@@ -22,7 +32,7 @@ const mixin = {
   methods: {
     detectFaces(picture) {
       const params = {
-        CollectionId: "myCollection",
+        CollectionId: "emptyCollection",
         Image: {
           Bytes: picture
         },
@@ -31,26 +41,40 @@ const mixin = {
 
       rekognition.searchFacesByImage(params, (error, data) => {
         this.toggleState({ recognizing: false });
-        if (error) return;
 
-        const { Face } = data.FaceMatches.shift();
-
-        if (Face)
-          this.toggleState({ recognizedFace: Face.ExternalImageId || "" });
-        // else this.enrollFaces(picture);
+        if (data.FaceMatches.length) {
+          const { Face } = data.FaceMatches.shift();
+          this.toggleState({ recognizedFace: Face.ExternalImageId, recognizing:false, enrollNewFace:false });
+          this.newFaceName = "";
+        } else {
+          this.$Notice.warning({
+            title: "No face name",
+            desc:
+              "This face is not registered, please enter a name and upload again",
+            duration: 8
+          });
+          this.toggleState({ enrollNewFace: true });
+        }
       });
     },
-    enrollFaces(picture) {
+    enrollFaces(picture, newFaceName) {
       const params = {
         CollectionId: "myCollection",
-        ExternalImageName: this.imageName,
+        ExternalImageId: newFaceName,
         Image: {
           Bytes: picture
         }
       };
       rekognition.indexFaces(params, (error, data) => {
-        if (error) return;
-        console.log("Indexes face: ", data);
+        if (error) {
+          this.toggleState({ recognizedFace: "", recognizing:false, enrollNewFace:false });
+          this.newFaceName = ""
+        }
+        if (data.FaceRecords.length) {
+          const { Face } = data.FaceRecords.shift();
+          this.toggleState({ recognizedFace: Face.ExternalImageId, recognizing:false, enrollNewFace:false });
+          this.newFaceName = ""
+        }
       });
     }
   }

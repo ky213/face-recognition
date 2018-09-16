@@ -1,9 +1,9 @@
 <template>
-    <div class="row justify-content-center mt-3">
+    <div class="row justify-content-center mt-4">
         <button 
         ref="uploadButton"
         class="btn btn-link mt-2"
-        :disabled="tracking || noFaces || recognizing"
+        :disabled="tracking || noFaces || recognizing || recognizedFace.length > 0 "
         title="upload for recognition"
         @click="$emit('recognize')"
          >
@@ -43,7 +43,7 @@ import { mapState } from "vuex";
 
 export default {
   computed:{
-    ...mapState(["tracking", "recognizing", "noFaces"])
+    ...mapState(["tracking", "recognizing", "noFaces", "recognizedFace"])
   }
 };
 </script>

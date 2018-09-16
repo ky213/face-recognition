@@ -2,8 +2,8 @@
   <div id="container" class="row justify-content-center">
     <div id="video-group" class="watch mt-3">
       <InfoLayer/>
-      <video id="video" ref="video" autoplay></video>
-      <BoundingBox />
+      <video id="video" class="d-block m-auto" ref="video" autoplay></video>
+      <BoundingBox v-model="newFaceName" />
       <canvas ref="canvas"></canvas>
       <Controls  @getCamera="getCamera" @takeSnapshot="takeSnapshot" @recognize="recognize" @swapCamera="swapCamera" />
     </div>
@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapState, mapMutations } from "vuex";
 import Controls from "./Controls";
 import BoundingBox from "./BoundingBox";
 import InfoLayer from "./InfoLayer";
@@ -21,8 +21,12 @@ let trackingTask = null;
 export default {
   data: function() {
     return {
-      facingMode: "user" // front or rear camera
+      facingMode: "user", // front or rear camera
+      newFaceName: ""
     };
+  },
+  computed: {
+    ...mapState(["picture", "enrollNewFace"])
   },
   mounted: function() {
     this.getCamera();
@@ -30,11 +34,19 @@ export default {
   methods: {
     ...mapMutations(["positionBoundingBox", "toggleState"]),
     getCamera() {
-      navigator.getMedia =
-        navigator.getUserMedia ||
-        navigator.webkitGetUserMedia ||
-        navigator.mozGetUserMedia ||
-        navigator.msGetUserMedia;
+        const { video } = this.$refs;
+        navigator.getMedia =
+          navigator.getUserMedia ||
+         navigator.webkitGetUserMedia ||
+         navigator.mozGetUserMedia ||
+         navigator.msGetUserMedia;
+
+         if(video.srcObject){
+            video.play()
+            this.startTracking();
+            this.toggleState({ trackedFaces: false, recognizedFace: "" });
+            return;
+         }
 
       navigator.getMedia(
         {
@@ -43,17 +55,16 @@ export default {
           }
         },
         stream => {
-          const { video } = this.$refs;
-          video.srcObject = stream;
-          this.startTracking();
-          this.recognizedPerson = "";
+            video.srcObject = stream;
+            this.toggleState({ trackedFaces: false, recognizedFace: "" });
+            this.startTracking();
         },
         error => {
           this.$Message.config({
             top: 250
           });
           this.$Message.error({
-            content: "Camera Needed!",
+            content: "Please allow camera!",
             duration: 5,
             closable: true
           });
@@ -64,13 +75,13 @@ export default {
       const rectangle = this.rectangle;
       const faceTracker = new tracking.ObjectTracker(["face"]);
 
-      this.toggleState({tracking:true });
+      this.toggleState({ tracking: true, enrollNewFace:false });
       faceTracker.on("track", event => {
         if (event.data.length === 0) {
           this.positionBoundingBox(0);
-          this.noFaces = true;
+          this.toggleState({ noFaces: true });
         } else {
-          this.noFaces = false;
+          this.toggleState({ noFaces: false });
           event.data.forEach(rect => {
             this.positionBoundingBox(rect);
           });
@@ -82,22 +93,32 @@ export default {
       const { video, canvas } = this.$refs;
       const context = canvas.getContext("2d");
 
-      this.toggleState({ tracking:false, recognizedFace:"" });
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      this.pictureURL = canvas.toDataURL();
-      trackingTask.stop();
-      video.srcObject.getVideoTracks().forEach(track => track.stop());
-    },
-    recognize() {
-      const picture = this.pictureURL.split(",")[1];
-      const pictureBinary = atob(picture);
+
+      const pictureURL = canvas.toDataURL()
+      const pictureData = pictureURL.split(",")[1];
+      const pictureBinary = atob(pictureData);
       const pictureBytes = new ArrayBuffer(pictureBinary.length);
       const pictureBuffer = new Uint8Array(pictureBytes);
       for (var i = 0; i < pictureBinary.length; i++) {
         pictureBuffer[i] = pictureBinary.charCodeAt(i);
       }
-      this.toggleState({tracking:false, recognizing:true})
-      this.detectFaces(pictureBuffer);
+
+      this.toggleState({
+        tracking: false,
+        recognizedFace: "",
+        picture:pictureBuffer 
+      });
+      trackingTask.stop();
+      video.pause();
+    },
+    recognize() {
+      this.toggleState({
+        tracking: false,
+        recognizing: true,
+      });
+      if (this.enrollNewFace) this.enrollFaces(this.picture, this.newFaceName);
+      else this.detectFaces(this.picture);
     },
     swapCamera() {
       this.facingMode =

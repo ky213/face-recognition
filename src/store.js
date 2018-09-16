@@ -7,9 +7,11 @@ export default new Vuex.Store({
   state: {
     tracking: null,
     recognizing: null,
-    pictureURL: "",
+    enrollNewFace: false,
+    picture:null,
     trackedFaces: null,
     recognizedFace: "",
+    pictureData:null,
     boundingBox: {
       width: 0,
       height: 0,
