@@ -27,15 +27,46 @@ app.post("/detect", upload.single("picture"), (req, res) => {
     }
   };
   rekognition.detectFaces(params, (error, data) => {
-    console.log("faces", error, data);
-    fs.unlink(req.file.path, () => {});
-    res.send(data);
+      fs.unlink(req.file.path, () => {});
+    if (error) {
+      res.sendStatus(500)
+    } else {
+      res.send(data);
+    }
   });
 });
 
-app.post("/enroll",upload.single("picture"), (req, res) => {
 
-  
+app.post("/rekognize", upload.single("picture"), (req, res) => {
+  const buffer = fs.readFileSync(req.file.path, read => {});
+  const params = {
+    CollectionId: "myCollection",
+    Image: {
+      Bytes: buffer
+    }
+  };
+  rekognition.searchFacesByImage(params, (error, data) => {
+      fs.unlink(req.file.path, () => {});
+    if (error) {
+      res.sendStatus(500)
+    } else {
+      res.send(data);
+    }
+  });
+});
+
+app.post("/enroll", upload.single("picture"), (req, res) => {
+  const buffer = new Buffer(req.body.picture, "base64");
+  const params = {
+    CollectionId: "myCollection",
+    ExternalImageId: req.body.name,
+    Image: {
+      Bytes: buffer
+    }
+  };
+  rekognition.indexFaces(params, (error, data) => {
+    res.send(data);
+  });
 });
 
 app.listen(3000, () => {

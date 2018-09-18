@@ -8,20 +8,15 @@ const rekognition = new Rekognition({
   }
 });
 
-rekognition.createCollection(
-  { CollectionId: "myCollection" },
-  (erro, data) => {}
-);
-
-rekognition.deleteCollection(
-  { CollectionId: "emptyCollection" },
-  (error, data) => {
-    rekognition.createCollection(
-      { CollectionId: "emptyCollection" },
-      (error, data) => {}
-    );
-  }
-);
+// rekognition.deleteCollection(
+//   { CollectionId: "myCollection" },
+//   (error, data) => {
+//     rekognition.createCollection(
+//       { CollectionId: "myCollection" },
+//       (error, data) => {}
+//     );
+//   }
+// );
 
 const mixin = {
   data() {
@@ -32,7 +27,7 @@ const mixin = {
   methods: {
     detectFaces(picture) {
       const params = {
-        CollectionId: "emptyCollection",
+        CollectionId: "myCollection",
         Image: {
           Bytes: picture
         },
@@ -44,7 +39,11 @@ const mixin = {
 
         if (data.FaceMatches.length) {
           const { Face } = data.FaceMatches.shift();
-          this.toggleState({ recognizedFace: Face.ExternalImageId, recognizing:false, enrollNewFace:false });
+          this.toggleState({
+            recognizedFace: Face.ExternalImageId,
+            recognizing: false,
+            enrollNewFace: false
+          });
           this.newFaceName = "";
         } else {
           this.$Notice.warning({
@@ -67,13 +66,21 @@ const mixin = {
       };
       rekognition.indexFaces(params, (error, data) => {
         if (error) {
-          this.toggleState({ recognizedFace: "", recognizing:false, enrollNewFace:false });
-          this.newFaceName = ""
+          this.toggleState({
+            recognizedFace: "",
+            recognizing: false,
+            enrollNewFace: false
+          });
+          this.newFaceName = "";
         }
         if (data.FaceRecords.length) {
           const { Face } = data.FaceRecords.shift();
-          this.toggleState({ recognizedFace: Face.ExternalImageId, recognizing:false, enrollNewFace:false });
-          this.newFaceName = ""
+          this.toggleState({
+            recognizedFace: Face.ExternalImageId,
+            recognizing: false,
+            enrollNewFace: false
+          });
+          this.newFaceName = "";
         }
       });
     }

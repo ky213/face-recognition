@@ -1,12 +1,13 @@
 <template>
   <div class="">
-    <BoundingBox :box="box" :picture="picture"/>
+    <BoundingBox :box="box" :picture="picture" :name="name" :enroll="enroll" @addNewFace="addNewFace"/>
     <Upload 
     name="picture" 
-    class="mt-4"
+    class="mt-5"
     type="drag" 
-    action="http://localhost:3000/detect" 
+    action="http://localhost:3000/rekognize" 
     accept=".jpeg, .jpg, .png"
+    :show-upload-list="false"
     :format="['jpeg','jpg','png']"
     :before-upload="beforeUpload"
     :on-success="successHandler"
@@ -27,26 +28,40 @@ import BoundingBox from "./BoundingBox";
 export default {
   data() {
     return {
+      name: "",
       picture: "",
-      box: {}
+      box: {},
+      enroll: false
     };
   },
   methods: {
     beforeUpload(file) {
-      this.picture = URL.createObjectURL(file);
+      const reader = new FileReader(file);
+      const self = this;
+      reader.onload = (function(file) {
+        return function(e) {
+          self.picture = e.target.result;
+        };
+      })(file);
+      reader.readAsDataURL(file);
+
+      return !this.enroll;
     },
-    successHandler({ FaceDetails }) {
-      console.log("bounding box", FaceDetails.slice());
-      if (FaceDetails) {
-        const { BoundingBox } = FaceDetails.pop();
-          this.box = BoundingBox
-      } else
+    successHandler({ SearchedFaceBoundingBox, FaceMatches }) {
+      this.box = SearchedFaceBoundingBox;
+      if (FaceMatches.length) {
+        this.enroll = false;
+        this.name = FaceMatches[0].Face.ExternalImageId;
+      } else {
+        this.enroll = true;
         this.$Notice.error({
-          title: "Face Detection Error",
-          desc: "No faces in this picture"
+          title: "Not recognized",
+          desc: "Please add a name and submit again to register new face"
         });
+      }
     },
     errorHandler(error) {
+      this.name = ""
       this.$Notice.error({
         title: "Error",
         desc: error
@@ -57,15 +72,45 @@ export default {
         title: "Format Error",
         desc: "only jpeg, jpg, png formats are accepted"
       });
+    },
+    addNewFace(event) {
+      const newFace = {
+        name: event.srcElement[0].value,
+        picture: this.picture.split(",")[1]
+      };
+      if (!newFace.name.length && !newFace.picture.length) {
+        this.$Notice.error({
+          title: "something is messing",
+          desc: "either name or image are missing"
+        });
+        return;
+      } else
+        fetch("http://localhost:3000/enroll", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(newFace)
+        })
+          .then(async response => {
+            const { FaceRecords } = await response.json();
+            this.enroll = false;
+            this.name = FaceRecords[0].Face.ExternalImageId;
+          })
+          .catch(error => {
+            this.enroll = true;
+            this.$Notice.error({
+              title: "Error sending",
+              desc: "Something went wrong while trying to send data"
+            });
+          });
     }
   },
-
-  components:{
+  components: {
     BoundingBox
   }
 };
 </script>
 
 <style lang="scss" scoped>
-
 </style>
