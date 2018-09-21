@@ -36,6 +36,12 @@ const mixin = {
 
       rekognition.searchFacesByImage(params, (error, data) => {
         this.toggleState({ recognizing: false });
+        if(error){
+          this.$Notice({
+            title:"Error !",
+            desc:"Error sending data"
+          })
+        }
 
         if (data.FaceMatches.length) {
           const { Face } = data.FaceMatches.shift();
