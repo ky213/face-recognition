@@ -1,5 +1,5 @@
 # face-recognition
-
+Demo: https://face-recognition-8eeae.firebaseapp.com
 ## Project setup
 ```
 yarn install
