@@ -69,8 +69,4 @@ app.post("/enroll", upload.single("picture"), (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("listening on port 3000...");
-});
-
 exports.recognizer = functions.https.onRequest(app);
