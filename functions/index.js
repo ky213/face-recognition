@@ -2,71 +2,70 @@ const functions = require("firebase-functions");
 const app = require("express")();
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const multer = require("multer");
-const fs = require("fs");
-const upload = multer({ dest: "uploads/" });
 const Rekognition = require("aws-sdk/clients/rekognition");
 
 const rekognition = new Rekognition({
   region: "us-east-1",
   credentials: {
-    accessKeyId: "AKIAIJ6ACUPII7XRIPTQ",
-    secretAccessKey: "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"
+    accessKeyId: "AKIAI7OAENSXOOELK3WA",
+    secretAccessKey: "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"
   }
 });
+
+rekognition.createCollection(
+  { CollectionId: "myCollection" },
+  (error, data) => {
+    console.log("Colelction creation: ", error || data);
+  }
+);
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false, limit: "8mb" }));
 app.use(bodyParser.json({ limit: "8mb" }));
 
-app.post("/detect", upload.single("picture"), (req, res) => {
-  const buffer = fs.readFileSync(req.file.path, read => {});
+
+app.post("/detect", (req, res) => {
+  const pictureBuffer = new Buffer(req.body.picture, "base64");
   const params = {
     Image: {
-      Bytes: buffer
+      Bytes: pictureBuffer
     }
   };
   rekognition.detectFaces(params, (error, data) => {
-      fs.unlink(req.file.path, () => {});
-    if (error) {
-      res.sendStatus(500)
-    } else {
-      res.send(data);
-    }
+    res.send(error || data)
   });
 });
 
-
-app.post("/rekognize", upload.single("picture"), (req, res) => {
-  const buffer = fs.readFileSync(req.file.path, read => {});
+app.post("/rekognize", (req, res) => {
+  const pictureBuffer = new Buffer(req.body.picture, "base64");
   const params = {
     CollectionId: "myCollection",
     Image: {
-      Bytes: buffer
+      Bytes: pictureBuffer
     }
   };
   rekognition.searchFacesByImage(params, (error, data) => {
-      fs.unlink(req.file.path, () => {});
-    if (error) {
-      res.sendStatus(500)
-    } else {
-      res.send(data);
-    }
+    console.log(error || data);
+    res.send(error || data);
   });
 });
 
-app.post("/enroll", upload.single("picture"), (req, res) => {
-  const buffer = new Buffer(req.body.picture, "base64");
+app.post("/enroll", (req, res) => {
+  const pictureBuffer = new Buffer(req.body.picture, "base64");
   const params = {
     CollectionId: "myCollection",
     ExternalImageId: req.body.name,
     Image: {
-      Bytes: buffer
+      Bytes: pictureBuffer
     }
   };
   rekognition.indexFaces(params, (error, data) => {
-    res.send(data);
+    res.send(error || data);
   });
 });
+
+// app.listen(3000, () => {
+//   console.log("server listening on port 3000");
+// });
 
 exports.recognizer = functions.https.onRequest(app);

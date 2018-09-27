@@ -40,12 +40,28 @@ export default {
       const self = this;
       reader.onload = (function(file) {
         return function(e) {
-          self.picture = e.target.result;
+          const picture = e.target.result;
+          self.picture = picture;
+          self.sendPicture(picture.split(",")[1]);
         };
       })(file);
       reader.readAsDataURL(file);
-
-      return !this.enroll;
+      return false;
+    },
+    sendPicture(pictureData) {
+      fetch(" https://us-central1-face-recognition-8eeae.cloudfunctions.net/recognizer/rekognize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ picture: pictureData })
+      })
+        .then(async response => {
+          this.successHandler(await response.json())
+        })
+        .catch(error => {
+          this.errorHandler(error)
+        });
     },
     successHandler({ SearchedFaceBoundingBox, FaceMatches }) {
       this.box = SearchedFaceBoundingBox;
@@ -61,7 +77,7 @@ export default {
       }
     },
     errorHandler(error) {
-      this.name = ""
+      this.name = "";
       this.$Notice.error({
         title: "Error",
         desc: error
